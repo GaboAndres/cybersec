@@ -1,0 +1,53 @@
+#!/bin/bash
+# NDFinder (New Domains Finder) is a bash script I wrote for searching recently created domains which may be 
+# suspicious of being used for phishing activities.
+
+# This script crawls through domain-status.com looking for recently created domain names with a variable on the name.
+# For example, if you'd like to find all new domains created which contains the word "bank", just set the variable and run # the script.
+# The script should be run daily as it searches through all the domains created 1 day ago. Run a cron for this.
+# 
+# Feel free to share or improve 
+# Currently TLDs supported: com, org, info, biz, us, name, aero. (This tools crawls through domain-status.com only)
+
+# Search pattern
+VARIABLE1="banco"
+
+TLD=(com org info biz us name aero)
+# Date is always one day ago (because domain-status.com works on a daily basis)
+DATE=$(date -v-1d +%Y-%-m-%d)
+
+
+echo "Searching date: $DATE"
+for x in "${TLD[@]}"
+do
+echo TLD: ."$x"
+        PAGENUMBER=0
+        LASTPAGE=$(curl -s https://domain-status.com/archives/"$DATE"/"$x"/registered/1 | grep "1 on " | awk '{print $4}' |sed 's/.$//')
+        if [ -z "$LASTPAGE" ]
+        then
+                LASTPAGE=1
+
+        else
+                
+        
+        while [ $PAGENUMBER -le "$LASTPAGE" ]
+        do
+                curl -s  https://domain-status.com/archives/"$DATE"/"$x"/registered/"$PAGENUMBER" |grep "domain-status.com/www" |grep $VARIABLE1 |cut -f3 -d ">" |cut -f1 -d "<"
+                ((PAGENUMBER++))
+        done
+        fi
+#        echo Total number of ."$x" pages: "$LASTPAGE"
+        
+done
+© 2019 GitHub, Inc.
+Terms
+Privacy
+Security
+Status
+Help
+Contact GitHub
+Pricing
+API
+Training
+Blog
+About
